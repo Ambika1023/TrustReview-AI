@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+pydantic
+joblib
+scikit-learn
+xgboost
+numpy
+scipy
+transformers
+torch
+sentence-transformers
+chromadb
