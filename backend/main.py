@@ -2,13 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
-from rag import retrieve_context
-from transformers import pipeline
+import os
+#from rag import retrieve_context
+#from transformers import pipeline
 
-chatbot_model = pipeline(
-    "text2text-generation",
-    model="google/flan-t5-base"
-)
 
 
 # Create app
@@ -23,14 +20,20 @@ app.add_middleware(
 )
 
 # Load trained model
-model = joblib.load("../ml/fraud_model.pkl")
-vectorizer = joblib.load("../ml/vectorizer.pkl")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+model = joblib.load(
+    os.path.join(BASE_DIR, "ml", "fraud_model.pkl")
+)
+
+vectorizer = joblib.load(
+    os.path.join(BASE_DIR, "ml", "vectorizer.pkl")
+)
 
 # Input schema
 class ReviewRequest(BaseModel):
     review: str
-class ChatRequest(BaseModel):
-    message: str
+
 
 
 # Home route
@@ -150,62 +153,3 @@ def predict_review(data: ReviewRequest):
         "fraud_probability": round(float(fraud_score), 2),
         "reasons": reasons
     }
-@app.post("/chat")
-def chatbot(data: ChatRequest):
-
-    try:
-
-        context_list = retrieve_context(
-            data.message
-        )
-
-        context = " ".join(context_list)
-
-        prompt = f"""
-You are TrustReview AI,
-a professional assistant ONLY for:
-
-- fake review detection
-- ecommerce fraud analysis
-- NLP
-- sentiment analysis
-- machine learning
-- review authenticity
-
-If the user asks unrelated questions,
-politely redirect them to fake review detection topics.
-
-Context:
-{context}
-
-User Question:
-{data.message}
-
-Professional Answer:
-"""
-
-        response = chatbot_model(
-            prompt,
-            max_new_tokens=150,
-            min_length=40,
-            temperature=0.3,
-            do_sample=True
-        )
-
-        reply = response[0]["generated_text"]
-
-        return {
-            "reply": reply
-        }
-
-    except Exception as e:
-
-        return {
-            "reply": str(e)
-        }
-    
-    except Exception as e:
-
-        return {
-            "reply": f"Error: {str(e)}"
-        }

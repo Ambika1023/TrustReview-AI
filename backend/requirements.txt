@@ -6,7 +6,3 @@ scikit-learn
 xgboost
 numpy
 scipy
-transformers
-torch
-sentence-transformers
-chromadb
