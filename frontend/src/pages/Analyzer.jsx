@@ -30,12 +30,15 @@ function Analyzer() {
 
       setLoading(true);
 
-      const response = await axios.post(
-        "http://127.0.0.1:8000/predict",
-        {
-          review: review
-        }
-      );
+      const API_URL = import.meta.env.VITE_API_URL ||
+  "http://127.0.0.1:8000";
+
+  const response = await axios.post(
+    `${API_URL}/predict`,
+  {
+    review: review
+  }
+);
 
       setResult(response.data);
 
